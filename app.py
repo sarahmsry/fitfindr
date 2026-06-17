@@ -32,19 +32,75 @@ def handle_query(user_query: str, wardrobe_choice: str) -> tuple[str, str, str]:
         A tuple of three strings:
             (listing_text, outfit_suggestion, fit_card)
         Each string maps to one of the three output panels in the UI.
-
-    TODO:
-        1. Guard against an empty query (return early with an error message).
-        2. Select the wardrobe based on wardrobe_choice.
-        3. Call run_agent() with the query and selected wardrobe.
-        4. If session["error"] is set, return the error in the first panel
-           and empty strings for the other two.
-        5. Otherwise, format session["selected_item"] into a readable listing_text
-           string and return it along with session["outfit_suggestion"] and
-           session["fit_card"].
     """
-    # TODO: implement this function
-    return "Agent not yet implemented.", "", ""
+    # Guard against empty query
+    if not user_query or not user_query.strip():
+        return "Please enter a search query (e.g., 'vintage graphic tee under $30').", "", ""
+
+    # Select wardrobe based on choice
+    if wardrobe_choice == "Empty wardrobe (new user)":
+        wardrobe = get_empty_wardrobe()
+    else:
+        wardrobe = get_example_wardrobe()
+
+    # Call the agent
+    session = run_agent(query=user_query, wardrobe=wardrobe)
+
+    # Check for errors
+    if session["error"]:
+        return session["error"], "", ""
+
+    # Format the listing
+    listing_text = _format_listing(session["selected_item"])
+
+    # Return the three outputs
+    return listing_text, session["outfit_suggestion"], session["fit_card"]
+
+
+def _format_listing(item: dict) -> str:
+    """
+    Format a listing dict into a readable string for display.
+
+    Args:
+        item: A listing dict from search_listings()
+
+    Returns:
+        A formatted markdown string with the listing details.
+    """
+    parts = []
+
+    parts.append(f"## {item.get('title', 'Untitled')}")
+
+    if item.get("price"):
+        parts.append(f"**Price:** ${item['price']}")
+
+    if item.get("platform"):
+        parts.append(f"**Platform:** {item['platform']}")
+
+    if item.get("size"):
+        parts.append(f"**Size:** {item['size']}")
+
+    if item.get("category"):
+        parts.append(f"**Category:** {item['category']}")
+
+    if item.get("condition"):
+        parts.append(f"**Condition:** {item['condition']}")
+
+    if item.get("colors"):
+        colors_str = ", ".join(item["colors"]) if isinstance(item["colors"], list) else item["colors"]
+        parts.append(f"**Colors:** {colors_str}")
+
+    if item.get("brand"):
+        parts.append(f"**Brand:** {item['brand']}")
+
+    if item.get("style_tags"):
+        tags_str = ", ".join(item["style_tags"]) if isinstance(item["style_tags"], list) else item["style_tags"]
+        parts.append(f"**Styles:** {tags_str}")
+
+    if item.get("description"):
+        parts.append(f"\n{item['description']}")
+
+    return "\n".join(parts)
 
 
 # ── interface ─────────────────────────────────────────────────────────────────

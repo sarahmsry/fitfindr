@@ -413,7 +413,7 @@ def create_fit_card(outfit: str, new_item: dict) -> str:
     """
     # Guard against empty outfit string
     if not outfit or not outfit.strip():
-        return "Check out this awesome thrifted find! 🛍️ Add it to your collection today."
+        return "Error: outfit suggestion is empty. Unable to generate fit card without outfit details."
     
     # Extract item details for the prompt
     title = new_item.get("title", "thrifted piece")
